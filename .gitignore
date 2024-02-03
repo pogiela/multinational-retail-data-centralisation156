@@ -1,5 +1,5 @@
-.gitignore
 .db_creds.yaml
 .s3_data.yaml
-bfg.jar
 __pycache__/*
+.packages.yaml
+*.xlsx

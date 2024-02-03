@@ -6,30 +6,44 @@ from dateutil.parser import parse
 
 
 class DataCleaning:
-    def __init__(self, input_data):
-        self.input_data = input_data
+    def __init__(self):
         self.incorrect_dates = set()
         self.conversion_errors = 0
     
-    def clean_user_data(self):
+    def clean_user_data(self, input_data, string_columns=[], date_columns=[], number_columns=[]):
         print('\n############## Changing column types: ##############\n') 
-        cleaned_data = self.__change_column_types(self.input_data)
+        try:
+            cleaned_data = self.__change_column_types(input_data=input_data, string_columns=string_columns, date_columns=date_columns, number_columns=number_columns)
+        except Exception as e:
+            print(f'Error occured when trying to change the column types: {e}')
+            sys.exit()
+        
         print('----> Data type changed successfully\n')
+        
+        # display datetime conversion errors
         if self.conversion_errors > 0:
             print(f'\n############## Following {len(self.incorrect_dates)} items could not be converted to a datetime ({self.conversion_errors} errors in total): ##############\n')
-        print(self.incorrect_dates)
+            print(self.incorrect_dates)
+            
         print('\n\n############## Data information after column types changed: ##############\n')
         print(cleaned_data.info())
+        
         print('\n\n############## Filtering blank rows: ##############\n') 
-        filtered_data = self.__filter_out_blank_rows(cleaned_data)
-        print(f'----> {self.input_data.shape[0] - filtered_data.shape[0]} blanks rows removed.\n')
+        try:
+            filtered_data = self.__filter_out_blank_rows(cleaned_data)
+        except Exception as e:
+            print(f'Error occured when trying to filter the data: {e}')
+            sys.exit()
+            
+        print(f'----> {input_data.shape[0] - filtered_data.shape[0]} blanks rows removed.\n')
+        
         print('\n############## Data information after blank rows removed: ##############\n')
         print(filtered_data.info())
+        
         return filtered_data
         
-    def __change_column_types(self, df):
-        string_columns = ['first_name', 'last_name', 'company', 'email_address', 'address', 'country', 'country_code', 'phone_number', 'user_uuid']
-        date_columns = ['date_of_birth', 'join_date']
+    def __change_column_types(self, input_data, string_columns=[], date_columns=[], number_columns=[]):
+        df = input_data
         
         # Change string column types to string
         try:

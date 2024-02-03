@@ -5,20 +5,23 @@
 
 from sqlalchemy import inspect
 import pandas as pd
-import yaml
+import sys
 
 class DataExtractor:
-    def __init__(self, db_engine):
-        # initiate database engine
-        self.db_engine = db_engine
+    def __init__(self):
+        pass
     
-    def list_db_tables(self):
-        # connect to the db engine
-        engine = self.db_engine.connect()
+    def list_db_tables(self, engine):
         # get a list of tables in the db
         if engine:
-            inspector = inspect(engine)
-            tables = inspector.get_table_names()
+            try:
+                inspector = inspect(engine)
+                tables = inspector.get_table_names()
+            except Exception as e:
+                print(f'Error occured when reading tables from the DB: {e}')
+                engine.close()
+                sys.exit()
+                
             if len(tables) == 0:
                 print('There are no tables in the database.')
                 return
@@ -29,37 +32,27 @@ class DataExtractor:
             if len(tables) > 0:
                 print('\n############## Available tables: ##############\n') 
                 print(tables)
-            return inspector.get_table_names()
+        
+            return tables
+            
         else:
-            return []
-    
-    def read_rds_table(self, table_name):
+            print(f'Error, the DB engine was not initiated correctly.')
+            sys.exit()
+        
+        
+    def read_rds_table(self, engine, table_name):
         # read data from the selected table and creat a panda dataframe
-        data = pd.read_sql_table(table_name, self.db_engine)
-        # print(data.head())
+        try:
+            data = pd.read_sql_table(table_name, engine)
+        except Exception as e:
+            print(f'Error occured when reading the data from {table_name} table: {e}')
+            engine.close()
+            sys.exit()
+            
         print(f'\n--> {data.shape[0]} rows and {data.shape[1]} columns read from table name {table_name}.\n') 
         print('\n############## First 5 rows of data: ##############\n') 
         print(data.head())
         print('\n\n############## Data information: ##############\n')
         print(data.info())
         return data
-    
-    def retrieve_pdf_data(self, link):
-        data_link = self.__read_data_link(link)
-        print(f'Data link: {data_link}')
-    
-    def __read_data_link(self, link_name):
-        # read the db credentials or throw an error
-        try:
-            with open('.s3_data.yaml', 'r') as file:
-                links = yaml.safe_load(file)
-                return links[link_name]
-        except FileNotFoundError:
-            print('Error: .s3_data.yaml not found.')
-            return None
-        except yaml.YAMLError as e:
-            print(f'Error loading YAML: {e}')
-            return None
-        
-        
     
