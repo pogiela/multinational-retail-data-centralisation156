@@ -44,6 +44,7 @@ class DataExtractor:
         # read data from the selected table and creat a panda dataframe
         try:
             data = pd.read_sql_table(table_name, engine)
+            data = data.set_index('index')  # Set 'index' column as the DataFrame index
         except Exception as e:
             print(f'Error occured when reading the data from {table_name} table: {e}')
             engine.close()

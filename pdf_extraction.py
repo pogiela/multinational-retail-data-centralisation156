@@ -97,7 +97,7 @@ class PdfDataExtractor:
             print(f'Error occured when concatenating pages data: {e}')
             sys.exit()
             
-        print("Processing complete.")
+        print("\n\nProcessing complete.")
         # return the final data frame
         return final_df
     
@@ -119,7 +119,6 @@ class PdfDataExtractor:
         percents = round(100.0 * count / float(total), 1)
         bar = '#' * filled_len + '-' * (bar_len - filled_len)
 
-        # sys.stdout.write('[%s] %s%s  [%s / %s] ...%s\r' % (bar, percents, '%', count, total, suffix))
         sys.stdout.write(f'[{bar}] {percents}%  [{count} / {total}]\r')
         sys.stdout.flush()
     

@@ -2,7 +2,7 @@ from database_utils import DatabaseConnector
 from database_extraction import DataExtractor
 from pdf_extraction import PdfDataExtractor
 from data_cleaning import DataCleaning
-import sys
+from api_extraction import ApiDataExtractor
 import subprocess
 import os
 
@@ -16,11 +16,15 @@ steps = [
     'STEP 3: Reading data from the legacy_users table',
     'STEP 4: Cleaning data',
     'STEP 5: Initialising output database connection',
-    'STEP 6: Uploading the Pandas DataFrame to a new database',
+    'STEP 6: Uploading data to the database',
     'STEP 7: Retriving data from the PDF file',
     'STEP 8: Cleaning data',
-    'STEP 9: Uploading data to the database'
+    'STEP 9: Uploading data to the database',
+    'STEP 10: Retriving data from API',
+    'STEP 11: Cleaning data',
+    'STEP 12: Uploading data to the database',
 ]
+
 # initial step number
 step_number = 0 
 
@@ -37,29 +41,17 @@ def clear_console():
     
 
 
-# function to get data from a PDF
-def get_data_from_pdf(file_path):
-    try:
-        # initialise PDF Data Extractor
-        pdf_data_extractor = PdfDataExtractor()
-        data = pdf_data_extractor.retrieve_pdf_data(file_path)
-    except Exception as e:
-        print(f'Error occured: {e}')
-        sys.exit()
-    
-    return data
-
-
 #################### MAIN PROGRAM: ####################
 
 ####### STEP 0: INITIALISATION #######
 # clear the console
 clear_console()
 
-# initialise DatabaseConnector class
+# initialise all classes
 db_connector = DatabaseConnector()
 db_extractor = DataExtractor()
 pdf_data_extractor = PdfDataExtractor()
+api_extractor = ApiDataExtractor()
 data_cleaning = DataCleaning()
 
 ####### STEP 1 #######
@@ -88,15 +80,11 @@ output_data = data_cleaning.clean_user_data(source_data, string_columns=string_c
 print_step_number(step_number)
 # create the output DB engine or throw an error
 output_db_engine = db_connector.init_db_engine('OUTPUT')
-# output_db_engine = create_db_engine('OUTPUT')
 
 ####### STEP 6 #######
 print_step_number(step_number)
 # upload data to the new database
 db_connector.upload_to_db(output_db_engine, output_data, 'dim_users')
-
-# # close connection
-# output_db_engine.close()
 
 ####### STEP 7 #######
 print_step_number(step_number)
@@ -115,9 +103,28 @@ print_step_number(step_number)
 # upload data to the new database
 db_connector.upload_to_db(output_db_engine, output_pdf_data, 'dim_card_details')
 
+####### STEP 10 #######
+print_step_number(step_number)
+# Retriving data from API',
+api_data = api_extractor.retrive_stores_data()
+
+####### STEP 11 #######
+print_step_number(step_number)
+# Cleaning data
+string_columns=['address', 'locality', 'store_code', 'store_type', 'country_code',	'continent']
+date_columns = ['opening_date']
+number_columns = ['longitude', 'lat', 'staff_numbers', 'latitude']
+int_columns = ['staff_numbers']
+output_api_data = data_cleaning.clean_user_data(api_data, string_columns, date_columns, number_columns, int_columns)
 
 
-# close connection
+####### STEP 12 #######
+print_step_number(step_number)
+# Uploading data to the database
+db_connector.upload_to_db(output_db_engine, output_api_data, 'dim_store_details')
+
+
+# close connection when all data uploaded
 output_db_engine.close()
 
 
