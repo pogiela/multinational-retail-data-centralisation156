@@ -3,6 +3,7 @@ from database_extraction import DataExtractor
 from pdf_extraction import PdfDataExtractor
 from data_cleaning import DataCleaning
 from api_extraction import ApiDataExtractor
+from csv_extraction import CsvDataExtractor
 import subprocess
 import os
 
@@ -23,6 +24,12 @@ steps = [
     'STEP 10: Retriving data from API',
     'STEP 11: Cleaning data',
     'STEP 12: Uploading data to the database',
+    'STEP 13: Retriving data from S3',
+    'STEP 14: Cleaning data',
+    'STEP 15: Uploading data to the database',
+    'STEP 16: Retriving orders data from AWS RDS',
+    'STEP 17: Cleaning data',
+    'STEP 18: Uploading data to the database',
 ]
 
 # initial step number
@@ -52,6 +59,7 @@ db_connector = DatabaseConnector()
 db_extractor = DataExtractor()
 pdf_data_extractor = PdfDataExtractor()
 api_extractor = ApiDataExtractor()
+csv_extractor = CsvDataExtractor()
 data_cleaning = DataCleaning()
 
 ####### STEP 1 #######
@@ -67,8 +75,6 @@ source_tables = db_extractor.list_db_tables(source_db_engine)
 ####### STEP 3 #######
 print_step_number(step_number)
 source_data = db_extractor.read_rds_table(source_db_engine, 'legacy_users')
-# close connection as it's not longer needed
-source_db_engine.close()
 
 ####### STEP 4 #######
 print_step_number(step_number)
@@ -84,29 +90,29 @@ output_db_engine = db_connector.init_db_engine('OUTPUT')
 ####### STEP 6 #######
 print_step_number(step_number)
 # upload data to the new database
-db_connector.upload_to_db(output_db_engine, output_data, 'dim_users')
+# db_connector.upload_to_db(output_db_engine, output_data, 'dim_users')
 
 ####### STEP 7 #######
 print_step_number(step_number)
 # retrive data from PDF file
-pdf_data = pdf_data_extractor.retrieve_pdf_data('CARD_DETAILS_DATA')
+# pdf_data = pdf_data_extractor.retrieve_pdf_data('CARD_DETAILS_DATA')
 
 ####### STEP 8 #######
 print_step_number(step_number)
 # clean data
 string_columns=['card_number', 'expiry_date', 'card_provider']
 date_columns = ['date_payment_confirmed']
-output_pdf_data = data_cleaning.clean_user_data(pdf_data, string_columns=string_columns, date_columns=date_columns, number_columns=[])
+# output_pdf_data = data_cleaning.clean_user_data(pdf_data, string_columns=string_columns, date_columns=date_columns, number_columns=[])
 
 ####### STEP 9 #######
 print_step_number(step_number)
 # upload data to the new database
-db_connector.upload_to_db(output_db_engine, output_pdf_data, 'dim_card_details')
+# db_connector.upload_to_db(output_db_engine, output_pdf_data, 'dim_card_details')
 
 ####### STEP 10 #######
 print_step_number(step_number)
 # Retriving data from API',
-api_data = api_extractor.retrive_stores_data()
+# api_data = api_extractor.retrive_stores_data()
 
 ####### STEP 11 #######
 print_step_number(step_number)
@@ -115,17 +121,63 @@ string_columns=['address', 'locality', 'store_code', 'store_type', 'country_code
 date_columns = ['opening_date']
 number_columns = ['longitude', 'lat', 'staff_numbers', 'latitude']
 int_columns = ['staff_numbers']
-output_api_data = data_cleaning.clean_user_data(api_data, string_columns, date_columns, number_columns, int_columns)
+# output_api_data = data_cleaning.clean_user_data(api_data, string_columns, date_columns, number_columns, int_columns)
 
 
 ####### STEP 12 #######
 print_step_number(step_number)
 # Uploading data to the database
-db_connector.upload_to_db(output_db_engine, output_api_data, 'dim_store_details')
+# db_connector.upload_to_db(output_db_engine, output_api_data, 'dim_store_details')
 
 
+
+####### STEP 13 #######
+print_step_number(step_number)
+# Retriving data from S3',
+# csv_data = csv_extractor.extract_from_s3()
+
+####### STEP 14 #######
+print_step_number(step_number)
+# Converting data types
+string_columns=['product_name', 'product_price', 'category', 'EAN', 'uuid', 'removed', 'product_code', 'weight']
+date_columns = ['date_added']
+number_columns = []
+int_columns = []
+# output_csv_data = data_cleaning.clean_user_data(csv_data, string_columns, date_columns, number_columns, int_columns)
+# Extracting product_price and weight
+# output_csv_data = data_cleaning.clean_products_data(output_csv_data)
+
+
+####### STEP 15 #######
+print_step_number(step_number)
+# Uploading data to the database
+# db_connector.upload_to_db(output_db_engine, output_csv_data, 'dim_products')
+
+
+####### STEP 16 #######
+print_step_number(step_number)
+orders_data = db_extractor.read_rds_table(source_db_engine, 'orders_table')
+
+####### STEP 17 #######
+print_step_number(step_number)
+string_columns = []
+date_columns = []
+number_columns=[]
+# output_orders_data = data_cleaning.clean_user_data(orders_data, string_columns, date_columns, number_columns)
+
+####### STEP 18 #######
+print_step_number(step_number)
+# Uploading data to the database
+# db_connector.upload_to_db(output_db_engine, output_orders_data, 'orders_table')
+
+
+
+####### CLEAN UP #######
+# close connection as it's not longer needed
+source_db_engine.close()
 # close connection when all data uploaded
 output_db_engine.close()
 
+# TODO: remove the temporary files
 
-# output_data.to_excel('./pdf_data.xlsx')
+# output_csv_data.to_excel('./csv_data.xlsx')

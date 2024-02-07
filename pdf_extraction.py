@@ -37,7 +37,8 @@ class PdfDataExtractor:
             final_df = self.__process_pdf_with_progress(downloaded_pdf_file, page_count)
             
             # remove the temporary file and folder
-            self.__remove_downloaded_file(downloaded_pdf_file)
+            # TODO: move removal to the clean-up function in the main programme
+            # self.__remove_downloaded_file(downloaded_pdf_file)
             
             return final_df
     
