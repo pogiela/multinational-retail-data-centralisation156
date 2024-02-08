@@ -1,6 +1,7 @@
 # methods to clean data from each of the data sources.
 # from database_utils import DatabaseConnector
 # from data_extraction import DataExtractor
+from numpy import integer
 import pandas as pd
 from dateutil.parser import parse
 import sys
@@ -11,7 +12,7 @@ class DataCleaning:
         self.incorrect_dates = set()
         self.conversion_errors = 0
     
-    def clean_user_data(self, input_data, string_columns=[], date_columns=[], number_columns=[], int_columns=[]):
+    def clean_user_data(self, input_data, string_columns=[], date_columns=[], number_columns=[], integer_columns=[]):
         print('\n############## Changing column types: ##############\n') 
         try:
             cleaned_data = self.__change_column_types(input_data, string_columns, date_columns, number_columns)
@@ -19,7 +20,7 @@ class DataCleaning:
             print(f'Error occured when trying to change the column types: {e}')
             sys.exit()
         
-        print('----> Data type changed successfully\n')
+        print('\n\n----> Success. Data type changed successfully\n')
         
         # display datetime conversion errors
         if self.conversion_errors > 0:
@@ -44,33 +45,27 @@ class DataCleaning:
         
         print(f'----> {input_data.shape[1] - filtered_data.shape[1]} blanks columns removed.\n')
         print(f'----> {input_data.shape[0] - filtered_data.shape[0]} blanks rows removed.\n')
-
-        # Replace any null values in numeric columns with 0
-        ## get list of datatypes
-        data_types = filtered_data.dtypes 
-        ## get list of numeric columns (in case any of the original columns were dropped)
-        selected_columns = data_types[data_types.isin(['float64', 'int64'])]
-        numeric_columns = selected_columns.index.tolist()
-        if len(numeric_columns) > 0:
-            try:
-                for column in numeric_columns:
-                    filtered_data[column]=filtered_data[column].fillna(0) # replace blanks with 0
-            except Exception as e:
-                print(f"An error occurred: {e}")
                 
         # Update Int columns type
         ## get list of numeric columns (in case any of the original columns were dropped)
-        selected_columns = data_types[data_types.isin(['int64'])]
-        integer_columns = selected_columns.index.tolist()
-        if len(integer_columns) > 0:
+        float_cols = [col for col in filtered_data.columns if filtered_data[col].dtype == 'float64']
+        ## final list of columns to convert to Int (which are in the df and in the original integer_columns list)
+        int_columns = list(set(float_cols) & set(integer_columns))
+        if len(int_columns) > 0:
             try:
-                for column in integer_columns:
-                    filtered_data[column]=filtered_data[column].astype('int64')
+                for column in int_columns:
+                    filtered_data[column]=filtered_data[column].fillna(0).astype('int64', errors='raise')
             except Exception as e:
                 print(f"An error occurred: {e}")
-                
+        
+        # update time columns to show just time (no date):
+        if 'timestamp' in filtered_data:
+            filtered_data['timestamp'] = pd.to_datetime(filtered_data['timestamp']).dt.time
+        
         print('\n############## Data information after blank rows removed: ##############\n')
         print(filtered_data.info())
+        print('\n############## First 5 rows of data: ##############\n')
+        print(filtered_data.head())
         
         return filtered_data
       
@@ -79,26 +74,44 @@ class DataCleaning:
         df = input_data
         
         # Change string column types to string
-        try:
-            df[string_columns] = df[string_columns].astype('string')
-        except Exception as e:
-            print(f"An error occurred: {e}")
+        if len(string_columns) > 0:
+            print(f"\n----> String columns: {string_columns}\n")
+            try:
+                df[string_columns] = df[string_columns].astype('string')
+                print(f"    ---> Columns {string_columns} changed to string\n")
+            except Exception as e:
+                print(f"An error occurred: {e}")
             
         # Parse date columns to datetime
-        try:
-            for column in date_columns:
-                df[column] = df[column].apply(self.__parse_date)
-                df[column] = pd.to_datetime(df[column], errors='coerce')
-        except Exception as e:
-            print(f"An error occurred: {e}")
+        if len(date_columns) > 0:
+            print(f"\n----> Datetime columns: {date_columns}\n")
+            try:
+                for column in date_columns:
+                    print(f"    ---> Chaning column {column} to datetime")
+                    df[column] = df[column].apply(self.__parse_date)
+                    df[column] = pd.to_datetime(df[column], errors='coerce')
+            except Exception as e:
+                print(f"An error occurred: {e}")
         
         # Change numeric column types
         if len(number_columns) > 0:
+            print(f"\n----> Numeric columns: {number_columns}\n")
             try:
                 for column in number_columns:
+                    print(f"    ---> Chaning column {column} to float")
                     df[column] = pd.to_numeric(df[column], errors='coerce')
             except Exception as e:
                 print(f"An error occurred: {e}")
+        
+        # Change integer column types
+        # if len(integer_columns) > 0:
+        #     print(f"\n----> Integer columns: {integer_columns}\n")
+        #     try:
+        #         for column in integer_columns:
+        #             print(f"    ---> Chaning column {column} to int")
+        #             df[column] = df[column].fillna(0).astype('int64', errors='raise')
+        #     except Exception as e:
+        #         print(f"An error occurred: {e}")
                 
         return df
 
