@@ -44,12 +44,17 @@ class DataExtractor:
         # read data from the selected table and creat a panda dataframe
         try:
             data = pd.read_sql_table(table_name, engine)
-            data = data.set_index('index')  # Set 'index' column as the DataFrame index
+            
+            if 'index' in data:
+                data = data.set_index('index')  # Set 'index' column as the DataFrame index
+            if 'level_0' in data:
+                data.rename(columns={'level_0': 'index'}, inplace=True) # rename column for orders_table
+                data = data.set_index('index')
         except Exception as e:
             print(f'Error occured when reading the data from {table_name} table: {e}')
             engine.close()
             sys.exit()
-            
+    
         print(f'\n--> {data.shape[0]} rows and {data.shape[1]} columns read from table name {table_name}.\n') 
         print('\n############## First 5 rows of data: ##############\n') 
         print(data.head())

@@ -160,15 +160,18 @@ orders_data = db_extractor.read_rds_table(source_db_engine, 'orders_table')
 
 ####### STEP 17 #######
 print_step_number(step_number)
-string_columns = []
+string_columns = ['date_uuid', 'user_uuid', 'card_number', 'store_code', 'product_code']
+# string_columns = ['date_uuid']
 date_columns = []
 number_columns=[]
-# output_orders_data = data_cleaning.clean_user_data(orders_data, string_columns, date_columns, number_columns)
+cleaned_orders_data = data_cleaning.clean_user_data(orders_data, string_columns, date_columns, number_columns)
+columns_to_remove = ['first_name', 'last_name']
+output_orders_data = data_cleaning.clean_orders_data(cleaned_orders_data, columns_to_remove)
 
 ####### STEP 18 #######
 print_step_number(step_number)
 # Uploading data to the database
-# db_connector.upload_to_db(output_db_engine, output_orders_data, 'orders_table')
+db_connector.upload_to_db(output_db_engine, output_orders_data, 'orders_table')
 
 
 

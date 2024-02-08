@@ -33,7 +33,9 @@ class DataCleaning:
         # get the number of minimum non-blank columns to keep in the df 
         # all columns minus dates and numbers = if all dates and numbers are blank 
         # then these rows are removed (at least one of these need to be non-blank)
-        blank_columns_thresh = cleaned_data.shape[1] - len(date_columns) - len(number_columns) + 1
+        blank_columns_thresh = 1
+        if len(date_columns) > 0 or len(number_columns) > 0: # this is in case there are no numeric or date columns
+            blank_columns_thresh = cleaned_data.shape[1] - len(date_columns) - len(number_columns) + 1
         try:
             filtered_data = self.__filter_out_blanks(cleaned_data, blank_columns_thresh)
         except Exception as e:
@@ -180,4 +182,19 @@ class DataCleaning:
         print(df.info())
         
         # return final dataframe
+        return df
+    
+    
+    def clean_orders_data(self, df, columns_to_remove):
+        print('\n\n############## Removing specified coloumns ##############\n')
+        try:
+            df.drop(columns=columns_to_remove, inplace=True)
+            print(f'----> Success, columns {columns_to_remove} removed.\n')
+        except Exception as e:
+            print(f'Error occured: {e}')
+            sys.exit()
+       
+        print('\n############## Data information after columns removed: ##############\n')
+        print(df.info())
+        
         return df
