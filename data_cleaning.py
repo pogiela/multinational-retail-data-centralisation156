@@ -1,6 +1,41 @@
-# methods to clean data from each of the data sources.
-# from database_utils import DatabaseConnector
-# from data_extraction import DataExtractor
+'''
+DataCleaning class contains methods helping to clean the data, change data types, 
+remove rows and columns to prepare data for upload to the output database
+
+Methods:
+-------
+clean_user_data(input_data, string_columns=[], date_columns=[], number_columns=[], integer_columns=[])
+    Changes column types based on the list of columns passed as the parameters for the data frame passed as input_data parameter. This method will also remove any blank columns or rows.
+    
+    Parameters:
+    ----------
+    input_data: DataFrame
+        A source DataFrame in which the data will be cleaned.
+    string_columns: string[],
+    date_columns: string[], 
+    number_columns: string[], 
+    integer_columns: string[]
+        List of columns from the source DataFrame which will be converted to a data type based on the parameter name (e.g. string, dates, numbers and integers)
+        
+clean_products_data(df)
+    Cleans Products data. This extracts and converts weight column to kg and price column.
+    
+    Parameters:
+    ----------
+    df: DataFrame
+        A source DataFrame in which the data will be cleaned.
+        
+clean_orders_data(df, columns_to_remove)
+    Cleans orders table. More specifically, removes unwanted columns.
+    
+    Parameters:
+    ----------
+    df: DataFrame
+        A source DataFrame in which the data will be cleaned.
+    columns_to_remove: string[]
+        A list of columns to be removed
+'''
+
 from numpy import integer
 import pandas as pd
 from dateutil.parser import parse
@@ -12,7 +47,23 @@ class DataCleaning:
         self.incorrect_dates = set()
         self.conversion_errors = 0
     
+    
     def clean_user_data(self, input_data, string_columns=[], date_columns=[], number_columns=[], integer_columns=[]):
+        '''
+        clean_user_data(input_data, string_columns=[], date_columns=[], number_columns=[], integer_columns=[])
+            Changes column types based on the list of columns passed as the parameters for the data frame passed as input_data parameter. 
+            This method will also remove any blank columns or rows.
+        
+            Parameters:
+            ----------
+            input_data: DataFrame
+                A source DataFrame in which the data will be cleaned.
+            string_columns: string[],
+            date_columns: string[], 
+            number_columns: string[], 
+            integer_columns: string[]
+                List of columns from the source DataFrame which will be converted to a data type based on the parameter name (e.g. string, dates, numbers and integers)
+        '''
         print('\n############## Changing column types: ##############\n') 
         try:
             cleaned_data = self.__change_column_types(input_data, string_columns, date_columns, number_columns)
@@ -173,6 +224,15 @@ class DataCleaning:
         
         
     def clean_products_data(self, df):
+        '''
+        clean_products_data(df)
+            Cleans Products data. This extracts and converts weight column to kg and price column.
+        
+            Parameters:
+            ----------
+            df: DataFrame
+                A source DataFrame in which the data will be cleaned.
+        '''
         # convert product weight into kg
         print('\n\n############## Converting weight into decimal numbers in kg: ##############\n') 
         try:
@@ -199,6 +259,18 @@ class DataCleaning:
     
     
     def clean_orders_data(self, df, columns_to_remove):
+        '''
+        clean_orders_data(df, columns_to_remove)
+            Cleans orders table. More specifically, removes unwanted columns.
+            
+            Parameters:
+            ----------
+            df: DataFrame
+                A source DataFrame in which the data will be cleaned.
+            columns_to_remove: string[]
+                A list of columns to be removed
+        '''
+        
         print('\n\n############## Removing specified coloumns ##############\n')
         try:
             df.drop(columns=columns_to_remove, inplace=True)

@@ -1,6 +1,7 @@
 .db_creds.yaml
-.s3_data.yaml
 __pycache__/*
 .packages.yaml
 *.xlsx
 .env
+temp_files
+old_versions

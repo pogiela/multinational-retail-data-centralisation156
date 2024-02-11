@@ -1,4 +1,29 @@
-# used to connect with and upload data to the database.
+'''
+DatabaseConnector class contains methods allowing to initiate connection to the database and uploading data to a database
+
+Methods:
+-------
+init_db_engine(destination)
+    Initiate database connection engine based on the destination parameter.
+    
+    Parameters:
+    ----------
+    destination: string
+        This should equal to either SOURCE or OUTPUT and will indicate which database to initiate.
+        
+upload_to_db(db_engine, data, table_name)
+    Uploads data to a database.
+    
+    Parameters:
+    ----------
+    db_engine: db_engine
+        DB Engine object initiated with the init_db_engine() method.
+    data: [data]
+        Data to be uploaded to the database.
+    table_name: string
+        Name of the table the data will be uploaded to.
+'''
+
 import yaml
 from sqlalchemy import create_engine
 import sys
@@ -22,6 +47,15 @@ class DatabaseConnector:
             return None
         
     def init_db_engine(self, destination):
+        '''
+        init_db_engine(destination)
+            Initiate database connection engine based on the destination parameter.
+            
+            Parameters:
+            ----------
+            destination: string
+                This should equal to either SOURCE or OUTPUT and will indicate which database to initiate.
+        '''
         credentials = self.__read_db_creds(destination)
         if credentials is None:
             # Handle the case where credentials are not loaded
@@ -48,6 +82,19 @@ class DatabaseConnector:
         return engine
         
     def upload_to_db(self, db_engine, data, table_name):
+        '''
+        upload_to_db(db_engine, data, table_name)
+            Uploads data to a database.
+            
+            Parameters:
+            ----------
+            db_engine: db_engine
+                DB Engine object initiated with the init_db_engine() method.
+            data: [data]
+                Data to be uploaded to the database.
+            table_name: string
+                Name of the table the data will be uploaded to.
+        '''
         try:
             data.to_sql(con=db_engine, name=table_name, index=False, if_exists='replace')
         except Exception as e:
@@ -56,19 +103,7 @@ class DatabaseConnector:
             sys.exit()
         
         print(f'\n--> Success. There were {data.shape[0]} rows uploaded to table: {table_name}.\n')
-        
-#     def list_db_tables(self, db_engine):
-#         # engine = self.init_db_engine()
-#         engine = db_engine.connect()
-#         inspector = inspect(engine)
-#         return inspector.get_table_names()
-    
 
-
-# db_connector = DatabaseConnector()
-# db_engine = db_connector.init_db_engine('SOURCE')
-# test = db_connector.list_db_tables(db_engine)
-# print(test)
 
 
 
