@@ -34,13 +34,13 @@ read_rds_table(engine, table_name)
         Table name fro which the data should be returned.
 '''
 
-import sys
-import os
-from dotenv import load_dotenv
-import pandas as pd
-import fitz
-from sqlalchemy import inspect
 from data_processing import DataProcessing
+from dotenv import load_dotenv
+import fitz
+import os
+import pandas as pd
+from sqlalchemy import inspect
+import sys
 
 
 class DataExtractor(DataProcessing):

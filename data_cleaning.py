@@ -36,9 +36,9 @@ clean_orders_data(df, columns_to_remove)
         A list of columns to be removed
 '''
 
+from dateutil.parser import parse
 from numpy import integer
 import pandas as pd
-from dateutil.parser import parse
 import sys
 
 

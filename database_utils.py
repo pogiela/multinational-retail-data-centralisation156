@@ -24,9 +24,10 @@ upload_to_db(db_engine, data, table_name)
         Name of the table the data will be uploaded to.
 '''
 
-import yaml
 from sqlalchemy import create_engine
 import sys
+import yaml
+
 
 class DatabaseConnector:
     def __init__(self):

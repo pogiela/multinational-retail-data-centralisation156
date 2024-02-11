@@ -39,11 +39,12 @@ retrive_data_from_api(api_url, headers)
         A headers object which is required for API connection containing API KEY and Content-Type.
 '''
 
-import requests
-from pathlib import Path
-import sys
 import boto3
+from pathlib import Path
+import requests
+import sys
 import tabula
+
 
 ######### VARIABLES ######### 
 # Temporary folder name
