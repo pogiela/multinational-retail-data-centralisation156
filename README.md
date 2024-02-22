@@ -1,7 +1,7 @@
 # Multinational Retail Data Centralisation (MRDC)
 Multinational Retail Data Centralisation (MRDC) Project extracts data from various data sources, including AWS RDS database, S3 buckets, API endpoints and various data files, e.g. PDF, JSON and CSV.
 
-The project contains a number of classes helping to extract the data, clean up and upload to a new database.
+The project contains a number of classes helping to extract the data, clean up, upload to a new database and create database star schema.
 
 
 ## Built With
@@ -26,16 +26,16 @@ Version:
     ```
 
 2. Install all dependencies listed below. If using Conda environment use the *conda* commands (where available) or use *pip* commands if not using a dedicated conda environment.
-    a. yaml: conda install pyyaml | pip3 install pyyaml
-    b. sqlalchemy: conda install sqlalchemy | install sqlalchemy
-    c. pandas: conda install pandas | pip3 install pandas
-    d. tabula: conda install -c conda-forge tabula-py | pip3 install tabula-py
-    e. fitz: pip3 install PyMuPDF
-    f. requests: conda install requests | pip3 install requests
-    g. pathlib: conda install pathlib | pip3 install pathlib
-    h. psycopg2: conda install psycopg2 | pip3 install psycopg2
-    i. dotenv: conda install python-dotenv | pip3 install python-dotenv
-    j. boto3: conda install boto3 | pip3 install boto3
+    1. yaml: conda install pyyaml | pip3 install pyyaml
+    2. sqlalchemy: conda install sqlalchemy | install sqlalchemy
+    3. pandas: conda install pandas | pip3 install pandas
+    4. tabula: conda install -c conda-forge tabula-py | pip3 install tabula-py
+    5. fitz: pip3 install PyMuPDF
+    6. requests: conda install requests | pip3 install requests
+    7. pathlib: conda install pathlib | pip3 install pathlib
+    8. psycopg2: conda install psycopg2 | pip3 install psycopg2
+    9. dotenv: conda install python-dotenv | pip3 install python-dotenv
+    10. boto3: conda install boto3 | pip3 install boto3
 
 3. Add environmental variables and database credential files (see sections Environmental Variables and Database Connection Details).
 
@@ -51,6 +51,7 @@ Version:
 │   ├── .env                                        # FILE NOT INCLUDED IN REPO: Environmental variables - see section Environmental Variables.
 │   ├── .db_creds.yaml                              # FILE NOT INCLUDED IN REPO: Database connection details - see section Database Connection Details
 │   ├── database_utils.py                           # DatabaseConnector class and methods helping to connect to and upload data to a database
+│   ├── database_schema.py                          # DatabaseSchema class and methods helping to create star schema
 │   ├── data_processing.py                          # DataProcessing class and methods helping to extract data from various data sources. Parent class to DataExtractor.
 │   ├── data_extraction.py                          # DataExtractor class and methods helping to extract data from various data sources
 │   ├── data_cleaning.py                            # DataCleaning class and methods helping to clean the data before uploading to the database.

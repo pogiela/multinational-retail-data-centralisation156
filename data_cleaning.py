@@ -283,3 +283,25 @@ class DataCleaning:
         print(df.info())
         
         return df
+    
+    
+    def remove_question_mark_from_column(self, df, column_name):
+        """
+        remove_question_mark_from_column(df, column_name)
+            Removes the '?' character from a specified column in a DataFrame.
+
+            Parameters:
+            ----------
+                df: DataFrame
+                    The DataFrame containing the column.
+                column_name: string
+                    The name of the column to remove the '?' character from.
+        """
+        print(f"\n\n############## Removing '?' character from column '{column_name}' ##############\n")
+        try:
+            df[column_name] = df[column_name].str.replace('?', '')
+            print(f"Question mark removed from '{column_name}' column.")
+            return df
+        except Exception as e:
+            print(f"Error occurred: {e}")
+            sys.exit()

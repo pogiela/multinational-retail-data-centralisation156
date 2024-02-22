@@ -33,7 +33,6 @@ read_rds_table(engine, table_name)
     table_name: string
         Table name fro which the data should be returned.
 '''
-
 from data_processing import DataProcessing
 from dotenv import load_dotenv
 import fitz
@@ -231,3 +230,7 @@ class DataExtractor(DataProcessing):
         print('\n\n############## Data information: ##############\n')
         print(data.info())
         return data
+    
+    
+    
+   

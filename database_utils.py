@@ -103,7 +103,7 @@ class DatabaseConnector:
             db_engine.close()
             sys.exit()
         
-        print(f'\n--> Success. There were {data.shape[0]} rows uploaded to table: {table_name}.\n')
+        print(f'\n--> Success. There were {data.shape[0]} rows and {data.shape[1]} columns uploaded to table: {table_name}.\n')
 
 
 

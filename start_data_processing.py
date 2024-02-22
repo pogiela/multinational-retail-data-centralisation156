@@ -8,6 +8,7 @@ be displayed on the screen when the programme is running providing insight into 
 from data_cleaning import DataCleaning
 from data_extraction import DataExtractor
 from database_utils import DatabaseConnector
+from database_schema import DatabaseSchema
 import os
 import subprocess
 
@@ -107,8 +108,10 @@ def start_data_processing():
     date_columns = ['date_payment_confirmed']
     number_columns = []
     integer_columns = []
-    output_pdf_data = data_cleaning.clean_user_data(pdf_data, string_columns, date_columns, number_columns, integer_columns)
-
+    cleaned_pdf_data = data_cleaning.clean_user_data(pdf_data, string_columns, date_columns, number_columns, integer_columns)
+    # Remove question mark from the card number column
+    output_pdf_data = data_cleaning.remove_question_mark_from_column(cleaned_pdf_data, 'card_number')
+    
     ####### STEP 11 #######
     print_step_number(step_number)
     # upload data to the new database
@@ -185,6 +188,157 @@ def start_data_processing():
     print_step_number(step_number)
 
 
+def start_database_schema_update():
+    ####### STEP 22 #######
+    # clear the console
+    clear_console()
+    print_step_number(step_number)
+    
+    ####### STEP 23 #######
+    print_step_number(step_number)
+    
+    # initialise all classes
+    db_connector = DatabaseConnector()
+    print(f'\n--> DatabaseConnector class has been initiated.')
+    data_extractor = DataExtractor()
+    print(f'\n--> DataExtractor class has been initiated.')
+    database_schema = DatabaseSchema()
+    print(f'\n--> DatabaseSchema class has been initiated.')
+
+    # create the output DB engine or throw an error
+    output_db_engine = db_connector.init_db_engine('OUTPUT')
+
+    ####### STEP 24 #######
+    print_step_number(step_number)
+    # read list of tables from the output db or throw an error
+    output_tables = data_extractor.list_db_tables(output_db_engine)
+
+    ####### STEP 25 #######
+    print_step_number(step_number)
+    table_name = 'orders_table'
+    columns_and_types = {
+        'date_uuid': 'uuid',
+        'user_uuid': 'uuid',
+        'card_number': 'varchar',
+        'store_code': 'varchar',
+        'product_code': 'varchar',
+        'product_quantity': 'smallint', 
+    }
+    # update column types for the orders_table
+    database_schema.alter_rds_table_column_types(output_db_engine, table_name, columns_and_types)
+
+
+    ####### STEP 26 #######
+    print_step_number(step_number)
+    table_name = 'dim_users'
+    columns_and_types = {
+        'first_name': 'varchar(255)',
+        'last_name': 'varchar(255)',
+        'date_of_birth': 'date',
+        'country_code': 'varchar',
+        'user_uuid': 'uuid',
+        'join_date': 'date',
+    }
+    # update column types for the orders_table
+    database_schema.alter_rds_table_column_types(output_db_engine, table_name, columns_and_types)
+
+
+    ####### STEP 27 #######
+    print_step_number(step_number)
+    table_name = 'dim_store_details'
+    columns_and_types = {
+        'longitude': 'float',
+        'locality': 'varchar(255)',
+        'store_code': 'varchar',
+        'staff_numbers': 'smallint',
+        'opening_date': 'date',
+        'store_type': 'varchar(255)',
+        'latitude': 'float',
+        'country_code': 'varchar',
+        'continent': 'varchar(255)',
+    }
+    # update column types for the orders_table
+    database_schema.alter_rds_table_column_types(output_db_engine, table_name, columns_and_types)
+    
+    
+    ####### STEP 28 #######
+    print_step_number(step_number)
+    table_name = 'dim_products'
+    # create a new column for the weight class
+    database_schema.create_category_column(output_db_engine, table_name, 'weight_class')
+    # create a new column for the availability
+    database_schema.create_availability_column(output_db_engine, table_name, 'still_available')
+    columns_and_types = {
+        'product_price': 'float',
+        'weight': 'float',
+        'EAN': 'varchar',
+        'product_code': 'varchar',
+        'date_added': 'date',
+        'uuid': 'uuid',
+        'still_available': 'boolean',
+        'weight_class': 'varchar',
+    }
+    # update column types for the orders_table
+    database_schema.alter_rds_table_column_types(output_db_engine, table_name, columns_and_types)
+    
+    
+    ####### STEP 29 #######
+    print_step_number(step_number)
+    table_name = 'dim_date_times'
+    columns_and_types = {
+        'month': 'smallint',  # TODO: Milestone 3, task 6, asks to change the column type to 'varchar'. If needed then change the column type when created.
+        'year': 'smallint', # TODO: Milestone 3, task 6, asks to change the column type to 'varchar'. If needed then change the column type when created.
+        'day': 'smallint', # TODO: Milestone 3, task 6, asks to change the column type to 'varchar'. If needed then change the column type when created.
+        'time_period': 'varchar',
+        'date_uuid': 'uuid',
+    }
+    # update column types for the orders_table
+    database_schema.alter_rds_table_column_types(output_db_engine, table_name, columns_and_types)
+    
+    
+    ####### STEP 30 #######
+    print_step_number(step_number)
+    table_name = 'dim_card_details'
+    columns_and_types = {
+        'card_number': 'varchar',
+        'expiry_date': 'varchar',
+        'date_payment_confirmed': 'date',
+    }
+    # update column types for the orders_table
+    database_schema.alter_rds_table_column_types(output_db_engine, table_name, columns_and_types)
+    
+    
+    ####### STEP 31 #######
+    print_step_number(step_number)
+    tables_and_keys = {
+        'dim_users': 'user_uuid',
+        'dim_store_details': 'store_code',
+        'dim_products': 'product_code',
+        'dim_date_times': 'date_uuid',
+        'dim_card_details': 'card_number',
+    }
+    # update tables to have primary keys
+    database_schema.add_primary_keys(output_db_engine, tables_and_keys)
+   
+    
+    ####### STEP 32 #######
+    print_step_number(step_number)
+    table_name = 'orders_table'
+    foreign_keys = {
+        'dim_users': 'user_uuid',
+        'dim_store_details': 'store_code',
+        'dim_products': 'product_code',
+        'dim_date_times': 'date_uuid',
+        'dim_card_details': 'card_number',
+    }
+    # remove question mark from the card details
+    # database_schema.remove_question_mark_from_dim_card_details(output_db_engine)
+    # update tables to have primary keys
+    database_schema.add_foreign_keys(output_db_engine, table_name, foreign_keys)
+    
+    
+    
+    
 if __name__ == '__main__':
     #################### VARIABLES: ####################
     divider_symbol_count = 80 # length of a divider line when priting out output
@@ -211,10 +365,29 @@ if __name__ == '__main__':
         'STEP 18: Retriving Date Events data from JSON file',
         'STEP 19: Cleaning Date Events data',
         'STEP 20: Uploading Date Events data to the Output database',
-        'SUCCESS: All data has been successfully extracted, cleaned and uploaded to the DB'
+        'SUCCESS: All data has been successfully extracted, cleaned and uploaded to the DB',
+        '############################     DATABASE SCHEMA    ############################',
+        'STEP 23: Initialisation',
+        'STEP 24: Reading the list of tables from the Output DB',
+        'STEP 25: Updating table column types: orders_table',
+        'STEP 26: Updating table column types: dim_users',
+        'STEP 27: Updating table column types: dim_store_details',
+        'STEP 28: Updating table column types: dim_products',
+        'STEP 29: Updating table column types: dim_date_times',
+        'STEP 30: Updating table column types: dim_card_details',
+        'STEP 31: Adding Primary Keys to the dimensio tables',
+        'STEP 32: Adding Foreign Keys to the fact table',
+        'STEP 33: ',
+        'STEP 34: ',
+        'STEP 35: ',
+        'STEP 36: ',
+        'STEP 37: ',
+        'STEP 38: ',
     ]
 
     # initial step number
-    step_number = 0 
+    # step_number = 0 
 
-    start_data_processing()
+    #start_data_processing()
+    step_number = 21
+    start_database_schema_update()
