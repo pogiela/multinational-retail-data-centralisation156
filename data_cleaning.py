@@ -37,7 +37,6 @@ clean_orders_data(df, columns_to_remove)
 '''
 
 from dateutil.parser import parse
-from numpy import integer
 import pandas as pd
 import sys
 
@@ -153,16 +152,6 @@ class DataCleaning:
                     df[column] = pd.to_numeric(df[column], errors='coerce')
             except Exception as e:
                 print(f"An error occurred: {e}")
-        
-        # Change integer column types
-        # if len(integer_columns) > 0:
-        #     print(f"\n----> Integer columns: {integer_columns}\n")
-        #     try:
-        #         for column in integer_columns:
-        #             print(f"    ---> Chaning column {column} to int")
-        #             df[column] = df[column].fillna(0).astype('int64', errors='raise')
-        #     except Exception as e:
-        #         print(f"An error occurred: {e}")
                 
         return df
 

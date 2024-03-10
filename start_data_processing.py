@@ -1,14 +1,21 @@
 '''
 This is the main file to run the extraction, cleaning and uploading to a database process.
 
-The whole process is divided into 21 steps. Current step and all actions within the step will 
+The whole process is divided into multiple steps. Current step and all actions within the step will 
 be displayed on the screen when the programme is running providing insight into the progress.
+The programme will run all the steps in the order they are listed in the steps list.
 
+The programme is divided into 3 main parts:
+    1. Data Processing
+    2. Database Schema Update
+    3. Database Queries
 '''
+
 from data_cleaning import DataCleaning
 from data_extraction import DataExtractor
 from database_utils import DatabaseConnector
 from database_schema import DatabaseSchema
+from database_query import DatabaseQuery
 import os
 import subprocess
 
@@ -190,8 +197,8 @@ def start_data_processing():
 
 def start_database_schema_update():
     ####### STEP 22 #######
-    # clear the console
-    clear_console()
+    # # clear the console
+    # clear_console()
     print_step_number(step_number)
     
     ####### STEP 23 #######
@@ -332,10 +339,205 @@ def start_database_schema_update():
         'dim_card_details': 'card_number',
     }
     # remove question mark from the card details
-    # database_schema.remove_question_mark_from_dim_card_details(output_db_engine)
+    database_schema.remove_question_mark_from_dim_card_details(output_db_engine)
     # update tables to have primary keys
     database_schema.add_foreign_keys(output_db_engine, table_name, foreign_keys)
     
+    ####### STEP 33 #######
+    print_step_number(step_number)
+    
+    
+
+def start_database_queries():
+    ####### STEP 34 #######
+    # # clear the console
+    # clear_console()
+    print_step_number(step_number)
+    
+    ####### STEP 35 #######
+    print_step_number(step_number)
+    
+    # initialise all classes
+    db_connector = DatabaseConnector()
+    print(f'\n--> DatabaseConnector class has been initiated.')
+    database_query = DatabaseQuery()
+    print(f'\n--> DatabaseSchema class has been initiated.')
+
+    # create the output DB engine or throw an error
+    db_engine = db_connector.init_db_engine('OUTPUT')
+
+    ####### STEP 36 #######
+    print_step_number(step_number)
+    # No. of stores in each country
+    query = '''
+        SELECT 
+            country_code AS country, 
+            COUNT(store_code) AS total_no_stores
+        FROM dim_store_details 
+        GROUP BY country
+        ORDER BY total_no_stores DESC;
+    '''
+    database_query.query_database(db_engine, query)
+
+    ####### STEP 37 #######
+    print_step_number(step_number)
+    # locations with the most stores
+    query = '''
+        SELECT locality, COUNT(locality) as total_no_stores
+        FROM dim_store_details
+        GROUP BY locality
+        ORDER BY total_no_stores DESC
+        LIMIT 7;
+    '''
+    database_query.query_database(db_engine, query)
+    
+    
+    ####### STEP 38 #######
+    print_step_number(step_number)
+    query = '''
+        SELECT 
+            ROUND(SUM(orders_table.product_quantity * CAST(dim_products.product_price as numeric)), 2) AS total_sales,
+            dim_date_times.month
+        FROM orders_table
+        INNER JOIN dim_products
+        ON dim_products.product_code = orders_table.product_code
+        INNER JOIN dim_date_times
+        ON dim_date_times.date_uuid = orders_table.date_uuid
+        GROUP BY dim_date_times.month
+        ORDER BY total_sales DESC
+        LIMIT 6	
+    '''
+    database_query.query_database(db_engine, query)
+    
+    
+    ####### STEP 39 #######
+    print_step_number(step_number)
+    query = '''
+        SELECT
+            COUNT(o.date_uuid) AS numbers_of_sales,
+            SUM(o.product_quantity) AS product_quantity_count,
+            CASE
+                WHEN s.store_type IN ('Web Portal') THEN 'Web'
+                ELSE 'Offline'
+            END AS location
+        FROM orders_table as o
+        INNER JOIN dim_store_details as s
+        ON s.store_code = o.store_code
+        GROUP BY location
+        ORDER BY location DESC
+    '''
+    database_query.query_database(db_engine, query)
+    
+    
+    ####### STEP 40 #######
+    print_step_number(step_number)
+    query = '''
+        WITH total_sales_per_store_type AS (
+            SELECT
+                s.store_type,
+                ROUND(SUM(o.product_quantity * CAST(p.product_price as numeric)), 2) AS total_sales
+            FROM orders_table as o
+            INNER JOIN dim_products as p
+            ON p.product_code = o.product_code
+            INNER JOIN dim_store_details as s
+            ON s.store_code = o.store_code
+            GROUP BY s.store_type
+        )
+        SELECT
+            store_type,
+            total_sales,
+            ROUND( 100 * total_sales / SUM(total_sales) OVER (), 2) AS "percentage_total(%)"
+        FROM total_sales_per_store_type
+        GROUP BY store_type, total_sales
+        ORDER BY total_sales DESC
+    '''
+    database_query.query_database(db_engine, query)
+    
+    
+    ####### STEP 41 #######
+    print_step_number(step_number)
+    query = '''
+        SELECT 
+            ROUND(SUM(o.product_quantity * CAST(p.product_price as numeric)), 2) AS total_sales,
+            t.year,
+            t.month
+        FROM orders_table as o
+        INNER JOIN dim_products as p
+        ON p.product_code = o.product_code
+        INNER JOIN dim_date_times as t
+        ON t.date_uuid = o.date_uuid
+        GROUP BY t.year, t.month
+        ORDER BY total_sales DESC
+        LIMIT 10
+    '''
+    database_query.query_database(db_engine, query)
+    
+    
+    ####### STEP 42 #######
+    print_step_number(step_number)
+    query = '''
+        SELECT
+            SUM(staff_numbers) as total_staff_numbers,
+            country_code
+        FROM
+            dim_store_details
+        GROUP BY country_code
+        ORDER BY total_staff_numbers DESC
+    '''
+    # TODO: check if the query is correct as it returns different results than the expected
+    database_query.query_database(db_engine, query)
+    
+    
+    ####### STEP 43 #######
+    print_step_number(step_number)
+    query = '''
+        SELECT 
+            ROUND(SUM(o.product_quantity * CAST(p.product_price as numeric)), 2) AS total_sales,
+            s.store_type,
+            s.country_code
+        FROM orders_table AS o
+        INNER JOIN dim_products as p
+        ON p.product_code = o.product_code
+        INNER JOIN dim_store_details as s
+        ON s.store_code = o.store_code
+        WHERE s.country_code = 'DE'
+        GROUP BY s.country_code, s.store_type
+        ORDER BY total_sales
+    '''
+    database_query.query_database(db_engine, query)
+    
+    
+    ####### STEP 44 #######
+    print_step_number(step_number)
+    query = '''
+        WITH sale_times AS (
+            SELECT 
+                year,
+                (year || '-' || month || '-' || day || ' ' || timestamp)::timestamp AS sale_date_time,
+                LEAD((year || '-' || month || '-' || day || ' ' || timestamp)::timestamp) 
+                    OVER (ORDER BY year, month, day, timestamp) AS next_sale_date_time,
+                LEAD((year || '-' || month || '-' || day || ' ' || timestamp)::timestamp) 
+                    OVER (ORDER BY year, month, day, timestamp) - (year || '-' || month || '-' || day || ' ' || timestamp)::timestamp AS time_difference
+            FROM dim_date_times
+            ORDER BY year, month, day, timestamp
+        )
+        SELECT 
+            year,
+            (
+                ' "hours": ' || EXTRACT(HOUR FROM AVG(time_difference) ) || 
+                ' "minutes": ' || EXTRACT(MINUTE FROM AVG(time_difference) ) || 
+                ' "seconds": ' || EXTRACT(SECOND FROM AVG(time_difference) ) || 
+                ' "milliseconds": ' || EXTRACT(MILLISECOND FROM AVG(time_difference)) 
+            ) AS actual_time_taken
+        FROM sale_times
+        GROUP BY year
+        ORDER BY AVG(time_difference) DESC
+        LIMIT 5;
+    '''
+    database_query.query_database(db_engine, query)
+    
+    ####### STEP 45 #######
+    print_step_number(step_number)
     
     
     
@@ -377,17 +579,26 @@ if __name__ == '__main__':
         'STEP 30: Updating table column types: dim_card_details',
         'STEP 31: Adding Primary Keys to the dimensio tables',
         'STEP 32: Adding Foreign Keys to the fact table',
-        'STEP 33: ',
-        'STEP 34: ',
-        'STEP 35: ',
-        'STEP 36: ',
-        'STEP 37: ',
-        'STEP 38: ',
+        'SUCCESS: All alterations to the database schema have been successfully completed',
+        '############################     DATABASE QUERIES    ############################',
+        'STEP 35: Initialisation',
+        'STEP 36: No. of stores in each country',
+        'STEP 37: Locations with the most stores',
+        'STEP 38: Which months produced the largest amount of sales',
+        'STEP 39: How many sales are coming from online',
+        'STEP 40: What percentage of sales come through each type of store',
+        'STEP 41: Which month in each year produced the highest cost of sales',
+        'STEP 42: What is our staff headcount',
+        'STEP 43: Which German store type is selling the most',
+        'STEP 44: How quickly is the company making sales',
+        'SUCCESS: All database queries have been successfully completed'
     ]
 
     # initial step number
-    # step_number = 0 
+    step_number = 0 
 
-    #start_data_processing()
-    step_number = 21
+    start_data_processing()
+    # step_number = 21
     start_database_schema_update()
+    # step_number = 33
+    start_database_queries()

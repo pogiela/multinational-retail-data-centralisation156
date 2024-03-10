@@ -36,6 +36,7 @@ Version:
     8. psycopg2: conda install psycopg2 | pip3 install psycopg2
     9. dotenv: conda install python-dotenv | pip3 install python-dotenv
     10. boto3: conda install boto3 | pip3 install boto3
+    11. beautifultable: conda install beautifultable --channel conda-forge | pip3 install beautifultable
 
 3. Add environmental variables and database credential files (see sections Environmental Variables and Database Connection Details).
 
@@ -48,15 +49,18 @@ Version:
 ```
 .
 ├── multinational-retail-data-centralisation156     # Project files
-│   ├── .env                                        # FILE NOT INCLUDED IN REPO: Environmental variables - see section Environmental Variables.
-│   ├── .db_creds.yaml                              # FILE NOT INCLUDED IN REPO: Database connection details - see section Database Connection Details
-│   ├── database_utils.py                           # DatabaseConnector class and methods helping to connect to and upload data to a database
-│   ├── database_schema.py                          # DatabaseSchema class and methods helping to create star schema
-│   ├── data_processing.py                          # DataProcessing class and methods helping to extract data from various data sources. Parent class to DataExtractor.
-│   ├── data_extraction.py                          # DataExtractor class and methods helping to extract data from various data sources
-│   ├── data_cleaning.py                            # DataCleaning class and methods helping to clean the data before uploading to the database.
-│   └── start_data_processing.py                    # Main programme. Run this file to start the process.
-└── README.md                                       # This file
+   ├── .env                                        # FILE NOT INCLUDED IN REPO: Environmental variables - see section Environmental Variables.
+   ├── .db_creds.yaml                              # FILE NOT INCLUDED IN REPO: Database connection details - see section Database Connection Details.
+   ├── data_cleaning.py                            # DataCleaning class and methods helping to clean the data before uploading to the database.
+   ├── data_extraction.py                          # DataExtractor class and methods helping to extract data from various data sources.
+   ├── data_processing.py                          # DataProcessing class and methods helping to extract data from various data sources. Parent class to DataExtractor.
+   ├── database_query.py                           # DatabaseQuery class and methods used to query the database.
+   ├── database_schema.py                          # DatabaseSchema class and methods helping to create star schema.
+   ├── database_utils.py                           # DatabaseConnector class and methods helping to connect to and upload data to a database.
+   ├── queries_data.sql                            # SQL Queries used to query the database.
+   ├── queries_table_alterations.sql               # SQL Queries used to alter database tables to create star schema.
+   ├── README.md                                   # This file
+   └── start_data_processing.py                    # Main programme. Run this file to start the process.
 ```
 
 ## Environmental Variables

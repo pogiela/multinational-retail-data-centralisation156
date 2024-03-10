@@ -1,0 +1,19 @@
+{
+    "sqltools.connections": [
+        {
+            "pgOptions": {
+                "ssl": {
+                    "requestCert": true,
+                    "rejectUnauthorized": false
+                }
+            },
+            "previewLimit": 50,
+            "server": "aicore-training-rds-db.czg6mes0se77.eu-west-2.rds.amazonaws.com",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "database": "sales_data",
+            "username": "postgres",
+            "name": "MRDC Project"
+        }
+    ]
+}
