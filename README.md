@@ -66,33 +66,33 @@ Version:
 ## Environmental Variables
 The programme to run properly requires .env file to be created with the following fields. This file is not included in the repository and need to be created by the user.
 
-*CARD_DETAILS_DATA* - url to a PDF file containing Card Details Data.
-*DATE_EVENTS_DATA* - url to a JSON file containing Date Events Data.
-*PRODUCTS_DATA* url to a CSV file containing Products Data.
-*x_api_key* - API connection key
-*retrive_store_api* - API URL to get Stores Details Data
-*number_of_stores_api* - API URL to get Number of Stores
+- *CARD_DETAILS_DATA* - url to a PDF file containing Card Details Data.
+- *DATE_EVENTS_DATA* - url to a JSON file containing Date Events Data.
+- *PRODUCTS_DATA* url to a CSV file containing Products Data.
+- *x_api_key* - API connection key
+- *retrive_store_api* - API URL to get Stores Details Data
+- *number_of_stores_api* - API URL to get Number of Stores
 
 ## Database Connection Details
 The programme to run properly requires .db_creds.yaml file to be created with the following fields. This file is not included in the repository and need to be created by the user. The file needs to have two sections - one for Source database and another one for Output database. The file need to be written in the below format:
 
-*SOURCE:*
-    *RDS_HOST:* - RDS database host url
-    *RDS_PASSWORD:* Password to the database
-    *RDS_USER:* User to the database
-    *RDS_DATABASE:* Database name
-    *RDS_PORT:* Port number (default is *5432*)
-    *DATABASE_TYPE:* Type of the database (defaul is *postgresql*)
-    *DBAPI:* Database API type (default is *psycopg2*)
+- *SOURCE:*
+    - *RDS_HOST:* - RDS database host url
+    - *RDS_PASSWORD:* Password to the database
+    - *RDS_USER:* User to the database
+    - *RDS_DATABASE:* Database name
+    - *RDS_PORT:* Port number (default is *5432*)
+    - *DATABASE_TYPE:* Type of the database (defaul is *postgresql*)
+    - *DBAPI:* Database API type (default is *psycopg2*)
 
-*OUTPUT:*
-    *RDS_HOST:* - RDS database host url
-    *RDS_PASSWORD:* Password to the database
-    *RDS_USER:* User to the database
-    *RDS_DATABASE:* Database name
-    *RDS_PORT:* Port number (default is *5432*)
-    *DATABASE_TYPE:* Type of the database (defaul is *postgresql*)
-    *DBAPI:* Database API type (default is *psycopg2*)
+- *OUTPUT:*
+    - *RDS_HOST:* - RDS database host url
+    - *RDS_PASSWORD:* Password to the database
+    - *RDS_USER:* User to the database
+    - *RDS_DATABASE:* Database name
+    - *RDS_PORT:* Port number (default is *5432*)
+    - *DATABASE_TYPE:* Type of the database (defaul is *postgresql*)
+    - *DBAPI:* Database API type (default is *psycopg2*)
 
 
 ## License information:
